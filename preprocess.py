@@ -47,35 +47,26 @@ def read_sample(year):
 from matplotlib import patches
 import matplotlib.pyplot as plt
 
-def plot_all_channels(image, box):
-    if len(image.shape) == 2:
-        plot1channel(image, box)
-        return
-    else:
-        plt.rcParams.update({'font.size': 7})
-        num_channels = image.shape[0]
-        num_rows = int(np.sqrt(num_channels))
-        num_cols = int(np.round(num_channels//num_rows))
-        print(num_rows, num_cols)
-        fig, axs = plt.subplots(num_rows,num_cols) 
-        fig.tight_layout()
-        print(image.shape)
-        for i in range(num_rows):
-            for j in range(num_cols):
-                channel = i*num_cols + j 
-                if channel < image.shape[0]:
-                    ax = axs[i,j] if num_rows > 1 else axs[j]
-                    ax.axis('off')
-                    ax.imshow(image[channel,])
-                    addbox(ax, box)
-                    ax.set_title(NAMES[channel])
-        plt.show()
-
-def plot1channel(image, box):
-    __, ax = plt.subplots()
-    ax.axis('off')
-    plt.imshow(image)
-    addbox(ax, box)
+def plot_image(image, box):
+    ## warning: bug for one channel rescaled box
+    plt.rcParams.update({'font.size': 7})
+    if len(image.shape) == 2: image = np.array([image])
+    num_channels = image.shape[0]
+    num_rows = int(np.sqrt(num_channels))
+    num_cols = int(np.round(num_channels//num_rows))
+    fig, axs = plt.subplots(num_rows,num_cols) 
+    fig.tight_layout()
+    for i in range(num_rows):
+        for j in range(num_cols):
+            channel = i*num_cols + j 
+            if channel < image.shape[0]:
+                if num_channels == 1: ax = axs
+                elif num_rows == 1: ax = axs[j]
+                elif num_rows > 1: ax = axs[i,j]
+                ax.axis('off')
+                ax.imshow(image[channel,])
+                addbox(ax, box)
+                ax.set_title(NAMES[channel])
     plt.show()
     
 def addbox(ax, box):
@@ -108,37 +99,26 @@ year = "1979"
 #sample_data(year, random_indices)
 #plot_all_channels(year, 4)
 
-# https://stackoverflow.com/questions/49466033/resizing-image-and-its-bounding-box
-
-def plot_one_sample(year):
-    images, boxes = read_sample(year)
-    image, box = images[0], boxes[0]
-    print(image.shape)
-    fig, ax = plt.subplots()
-    plt.imshow(image[4])
-    addbox(ax, box)
-    plt.show()
-
 import cv2
 
-def rescale(image, box, targetx=300, targety=300):
+def rescale(image, box, target_x=300, target_y=300):
     # Rescale all channels
     if len(image.shape) == 3:
         num_channels, y_len, x_len = image.shape
         image_rescaled = []
         for i in range(num_channels):
-            image_rescaled += [cv2.resize(image[i,], (targetx, targety))]
+            image_rescaled += [cv2.resize(image[i,], (target_x, target_y))]
         image_rescaled = np.array(image_rescaled)
     elif len(image.shape) == 2:
         x_len, y_len = image.shape
-        image_rescaled = cv2.resize(image, (targetx, targety))
+        image_rescaled = cv2.resize(image, (target_x, target_y))
     print(image.shape)
     print(image_rescaled.shape)
 
     # Rescale boxes
     box_rescaled = []
-    y_scale = targety/y_len
-    x_scale = targetx/x_len
+    y_scale = target_y/y_len
+    x_scale = target_x/x_len
     for row in box:
         if not np.all(row==-1):
             ymin, xmin, ymax, xmax, event_class = row
@@ -146,13 +126,14 @@ def rescale(image, box, targetx=300, targety=300):
             box_rescaled += [new_row]
     box_rescaled = np.array(box_rescaled, dtype=int)
 
-    plot_all_channels(image_rescaled, box_rescaled)
-    plot_all_channels(image, box) 
+    plot_image(image_rescaled, box_rescaled)
+    plot_image(image, box) 
     return image_rescaled, box_rescaled
 
 
 images, boxes = read_sample('1979')
-rescale(images[0][3,], boxes[0])
+index = 7
+rescale(images[index][3:5,], boxes[index])
 #plot_one_sample(year)
 
 #hours = list(range(1460)[4*181:4*(181+31)])
