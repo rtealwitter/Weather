@@ -64,7 +64,7 @@ def plot_image(image, box):
                 elif num_rows == 1: ax = axs[j]
                 elif num_rows > 1: ax = axs[i,j]
                 ax.axis('off')
-                ax.imshow(image[channel,])
+                ax.imshow(image[channel,])                
                 addbox(ax, box)
                 ax.set_title(NAMES[channel])
     plt.show()
@@ -110,7 +110,7 @@ def rescale(image, box, target_x=300, target_y=300):
             image_rescaled += [cv2.resize(image[i,], (target_x, target_y))]
         image_rescaled = np.array(image_rescaled)
     elif len(image.shape) == 2:
-        x_len, y_len = image.shape
+        y_len, x_len = image.shape
         image_rescaled = cv2.resize(image, (target_x, target_y))
     print(image.shape)
     print(image_rescaled.shape)
@@ -133,7 +133,7 @@ def rescale(image, box, target_x=300, target_y=300):
 
 images, boxes = read_sample('1979')
 index = 7
-rescale(images[index][3:5,], boxes[index])
+rescale(images[index][3,], boxes[index])
 #plot_one_sample(year)
 
 #hours = list(range(1460)[4*181:4*(181+31)])
