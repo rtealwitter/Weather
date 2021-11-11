@@ -127,13 +127,13 @@ def rescale(image, box, target_x=300, target_y=300):
     box_rescaled = np.array(box_rescaled, dtype=int)
 
     plot_image(image_rescaled, box_rescaled)
-    plot_image(image, box) 
+    #plot_image(image, box) 
     return image_rescaled, box_rescaled
 
 
 images, boxes = read_sample('1979')
-index = 7
-rescale(images[index][3,], boxes[index])
+index = 2
+rescale(images[index], boxes[index])
 #plot_one_sample(year)
 
 #hours = list(range(1460)[4*181:4*(181+31)])
