@@ -1,3 +1,6 @@
 h5data
 h5small
 .DS_Store
+.ipynb_checkpoints
+train/
+__pycache__

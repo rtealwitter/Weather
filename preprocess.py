@@ -2,6 +2,7 @@ import h5py
 import numpy as np
 import gc
 import cv2
+from visualize import plot_image
 
 # Weather variables:
 # Total (convective and large-scale) precipitation rate (liq + ice)
@@ -21,17 +22,23 @@ import cv2
 # Geopotential Z at 200 mbar pressure surface
 # Lowest model level height
 
+def normalize(image):
+    #print('normalizing...')
+    #normalized = ((image - np.mean(image))/np.std(image)).round(decimals=3)
+    scaled = np.array(255 * (image - np.amin(image))/np.amax(image), dtype=int)
+    return scaled
+
 def rescale(image, box, target_x=300, target_y=300):
     # Rescale all channels
     if len(image.shape) == 3:
         num_channels, y_len, x_len = image.shape
         image_rescaled = []
         for i in range(num_channels):
-            image_rescaled += [cv2.resize(image[i,], (target_x, target_y))]
+            image_rescaled += [normalize(cv2.resize(image[i,], (target_x, target_y)))]
         image_rescaled = np.array(image_rescaled)
     elif len(image.shape) == 2:
         y_len, x_len = image.shape
-        image_rescaled = cv2.resize(image, (target_x, target_y))
+        image_rescaled = normalize(cv2.resize(image, (target_x, target_y)))
 
     # Rescale boxes
     box_rescaled = []
@@ -47,7 +54,6 @@ def rescale(image, box, target_x=300, target_y=300):
     box_rescaled = np.array(box_rescaled, dtype=int)
 
     return image_rescaled, box_rescaled
-
 
 def sample_data(year, indices):
     data_path = f'h5data/climo_{year}.h5'
@@ -65,29 +71,31 @@ def read_sample(year):
     with h5py.File(sample_path, 'r') as sample_file:
         return sample_file['images'][:,], sample_file['boxes'][:,]
 
-def shrink_data(year, hours, weather_variables):
+def shrink_data(year, weather_variables, foldername, hours=None):
     large_path = f'h5data/climo_{year}.h5'
-    small_path = f'h5small/climo_{year}.h5'
+    #small_path = f'h5small/climo_{year}.h5'
 
     # Load data in hours and weather_variables
     with h5py.File(large_path, 'r') as large_file:
-        images = large_file["images"][hours,]
-        images = images[:,weather_variables,]
-        boxes = large_file["boxes"][hours,]
+        images = large_file["images"][:,weather_variables,]
+        if hours != None:
+            images = images[hours,]
+            boxes = large_file["boxes"][hours,]
+        else:
+            boxes = large_file["boxes"][:]
     
     # Rescale to 300x300
-    images_rescaled = []
     boxes_rescaled = []
     for i in range(len(images)):
+        filename = f'{foldername}/{i}.jpg'
         image_rescaled, box_rescaled = rescale(images[i], boxes[i])
-        images_rescaled += [image_rescaled]
-        boxes_rescaled += [box_rescaled] 
-    images_rescaled = np.array(images_rescaled, dtype=int)
-    boxes_rescaled = np.array(boxes_rescaled, dtype=int)
+        image_moved = np.moveaxis(image_rescaled, 0, -1)
+        cv2.imwrite(filename, image_moved)
+        boxes_rescaled += [box_rescaled]     
 
-    with h5py.File(small_path, 'w') as small_file:
-        small_file.create_dataset(name="images",data=images_rescaled, shape=images_rescaled.shape, dtype='f4', compression="gzip")
-        small_file.create_dataset(name="boxes",data=boxes_rescaled, shape=boxes_rescaled.shape, dtype='i4', compression="gzip")
+    with open(f'{foldername}/bboxes.txt', 'w') as f:
+        for box in boxes_rescaled:
+            f.write(str(box.tolist())+'\n')
 
 def read_data(year):
     data_path = f'h5small/climo_{year}.h5'
@@ -105,12 +113,11 @@ if __name__ == '__main__':
     #index = 4
     #img, bx = rescale(images[index], boxes[index])
     #plot_image(img, bx)
-    #plot_one_sample(year)
 
-    #year = '1979'
-    #hours = list(range(1460)[4*181:4*(181+31)])
-    #weather_variables = [2,6,10]
-    #shrink_data(year, hours, weather_variables)
+    year = '1979'
+    hours = list(range(1460)[4*181:4*(181+31)])
+    weather_variables = [2,6,10]
+    shrink_data(year, weather_variables, foldername='train', hours=hours)
     #images, boxes = read_data(year)
     #print(images.shape)
     #plotbox(image, box)

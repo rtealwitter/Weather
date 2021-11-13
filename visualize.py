@@ -1,5 +1,6 @@
 from matplotlib import patches
 import matplotlib.pyplot as plt
+import numpy as np
 
 EVENTS = ['Tropical Depression', 'Tropical Cyclone', 'Extratropical Cyclone', 'Atmospheric River']
 
