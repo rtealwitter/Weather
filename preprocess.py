@@ -23,10 +23,7 @@ from visualize import plot_image
 # Lowest model level height
 
 def normalize(image):
-    #print('normalizing...')
-    #normalized = ((image - np.mean(image))/np.std(image)).round(decimals=3)
-    scaled = np.array(255 * (image - np.amin(image))/np.amax(image), dtype=int)
-    return scaled
+    return np.array(255 * (image - np.amin(image))/np.amax(image), dtype=int)
 
 def rescale(image, box, target_x=300, target_y=300):
     # Rescale all channels
@@ -42,18 +39,18 @@ def rescale(image, box, target_x=300, target_y=300):
 
     # Rescale boxes
     box_rescaled = []
+    labels = []
     y_scale = target_y/y_len
     x_scale = target_x/x_len
     for row in box:
         if not np.all(row==-1):
             ymin, xmin, ymax, xmax, event_class = row
-            new_row = [ymin*y_scale, xmin*x_scale, ymax*y_scale, xmax*x_scale, event_class]
+            labels += [event_class]
+            # ltrb (left top right bottom) format
+            new_row = [int(xmin*x_scale), int(ymax*y_scale), int(xmax*x_scale), int(ymin*y_scale)]
             box_rescaled += [new_row]
-        else:
-            box_rescaled += [row]
-    box_rescaled = np.array(box_rescaled, dtype=int)
 
-    return image_rescaled, box_rescaled
+    return image_rescaled, box_rescaled, labels
 
 def sample_data(year, indices):
     data_path = f'h5data/climo_{year}.h5'
@@ -86,16 +83,22 @@ def shrink_data(year, weather_variables, foldername, hours=None):
     
     # Rescale to 300x300
     boxes_rescaled = []
+    labels = []
     for i in range(len(images)):
         filename = f'{foldername}/{i}.jpg'
-        image_rescaled, box_rescaled = rescale(images[i], boxes[i])
+        image_rescaled, box_rescaled, label = rescale(images[i], boxes[i])
         image_moved = np.moveaxis(image_rescaled, 0, -1)
         cv2.imwrite(filename, image_moved)
         boxes_rescaled += [box_rescaled]     
+        labels += [label]
+
+    with open(f'{foldername}/labels.txt', 'w') as f:
+        for label in labels:
+            f.write(str(label)+'\n')
 
     with open(f'{foldername}/bboxes.txt', 'w') as f:
         for box in boxes_rescaled:
-            f.write(str(box.tolist())+'\n')
+            f.write(str(box)+'\n')
 
 def read_data(year):
     data_path = f'h5small/climo_{year}.h5'
@@ -110,9 +113,9 @@ if __name__ == '__main__':
     #sample_data(year, random_indices)
 
     #images, boxes = read_sample('1979')
-    #index = 4
-    #img, bx = rescale(images[index], boxes[index])
-    #plot_image(img, bx)
+    #index = 5
+    #img, bx, labels = rescale(images[index], boxes[index])
+    #plot_image(img, bx, labels)
 
     year = '1979'
     hours = list(range(1460)[4*181:4*(181+31)])

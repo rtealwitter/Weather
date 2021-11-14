@@ -11,8 +11,7 @@ NAMES = ['Precipitation', 'Surface Pressure', 'Sea Level Pressure',
          'Lowest Meridional Wind', 'Geopotential at 100 mbar',
          'Geopotential at 200 mbar', 'Lowest Model Height']
 
-def plot_image(image, box):
-    plt.rcParams.update({'font.size': 7})
+def plot_image(image, box, labels):
     if len(image.shape) == 2: image = np.array([image])
     num_channels = image.shape[0]
     num_rows = int(np.sqrt(num_channels))
@@ -28,12 +27,17 @@ def plot_image(image, box):
                 elif num_rows > 1: ax = axs[i,j]
                 ax.axis('off')
                 ax.imshow(image[channel,])                
-                addbox(ax, box)
+                addbox(ax, box, labels)
                 ax.set_title(NAMES[channel])
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.show()
-    
-def addbox(ax, box):
-    for row in box:
-        if not np.all(row == -1):
-            ymin, xmin, ymax, xmax, event_class = row
-            ax.add_patch(patches.Rectangle(xy=(xmin, ymin),width=xmax-xmin, height=ymax-ymin, fill=False, label=EVENTS[event_class]))
+
+def addbox(ax, box, labels):
+    for i in range(len(box)):
+        left, top, right, bottom = box[i]
+        handles, existing_labels = ax.get_legend_handles_labels()
+        label = "" if labels!= None or EVENTS[labels[i]] in existing_labels else EVENTS[labels[i]]
+        ax.add_patch(patches.Rectangle(xy=(left, bottom), width=top-bottom,
+                                        height=right-left, fill=False,
+                                        label=label))
+
