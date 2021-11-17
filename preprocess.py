@@ -84,13 +84,16 @@ def shrink_data(year, weather_variables, foldername, hours=None):
     # Rescale to 300x300
     boxes_rescaled = []
     labels = []
+    current_num = 0
     for i in range(len(images)):
-        filename = f'{foldername}/{i}.jpg'
+        filename = f'{foldername}/{current_num}.jpg'
         image_rescaled, box_rescaled, label = rescale(images[i], boxes[i])
-        image_moved = np.moveaxis(image_rescaled, 0, -1)
-        cv2.imwrite(filename, image_moved)
-        boxes_rescaled += [box_rescaled]     
-        labels += [label]
+        if len(box_rescaled) > 0:
+            image_moved = np.moveaxis(image_rescaled, 0, -1)
+            cv2.imwrite(filename, image_moved)
+            boxes_rescaled += [box_rescaled]     
+            labels += [label]
+            current_num += 1
 
     with open(f'{foldername}/labels.txt', 'w') as f:
         for label in labels:
@@ -115,12 +118,17 @@ if __name__ == '__main__':
     #images, boxes = read_sample('1979')
     #index = 5
     #img, bx, labels = rescale(images[index], boxes[index])
+    #print(len(bx))
     #plot_image(img, bx, labels)
 
     year = '1979'
-    hours = list(range(1460)[4*181:4*(181+31)])
     weather_variables = [2,6,10]
-    shrink_data(year, weather_variables, foldername='train', hours=hours)
+    cut_off = 4*(365-31)
+    hours_train = list(range(1460)[:cut_off])
+    shrink_data(year, weather_variables, foldername='train', hours=hours_train)
+
+    hours_valid = list(range(1460)[cut_off:])
+    shrink_data(year, weather_variables, foldername='valid', hours=hours_valid)
     #images, boxes = read_data(year)
     #print(images.shape)
     #plotbox(image, box)
