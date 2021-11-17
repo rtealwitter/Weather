@@ -34,7 +34,7 @@ def plot_image(image, box, labels):
 
 def addbox(ax, box, labels):
     for i in range(len(box)):
-        left, top, right, bottom = box[i]
+        left, bottom, right, top = box[i]
         handles, existing_labels = ax.get_legend_handles_labels()
         label = "" if labels!= None or EVENTS[labels[i]] in existing_labels else EVENTS[labels[i]]
         ax.add_patch(patches.Rectangle(xy=(left, bottom), width=top-bottom,

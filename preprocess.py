@@ -47,7 +47,7 @@ def rescale(image, box, target_x=300, target_y=300):
             ymin, xmin, ymax, xmax, event_class = row
             labels += [event_class]
             # ltrb (left top right bottom) format
-            new_row = [int(xmin*x_scale), int(ymax*y_scale), int(xmax*x_scale), int(ymin*y_scale)]
+            new_row = [int(xmin*x_scale), int(ymin*y_scale), int(xmax*x_scale), int(ymax*y_scale)]
             box_rescaled += [new_row]
 
     return image_rescaled, box_rescaled, labels
