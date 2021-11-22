@@ -32,17 +32,18 @@ def plot_image_extreme(image, box=None, labels=None):
           addbox(ax, box, labels)
         ax.set_title(NAMES[channel])
   if box != None:
-    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-  plt.show()
+    ax.legend()
+  plt.savefig('figures/allextremechannels.pdf')
     
 def addbox(ax, box, labels):
   for i in range(len(box)):
     left, bottom, right, top = box[i]
     handles, existing_labels = ax.get_legend_handles_labels()
-    label = "" if (labels == None) or (LABELS[int(labels[i])] in existing_labels) else LABELS[int(labels[i])]
+    label_idx = int(labels[i])
+    label = "" if (labels == None) or (LABELS[label_idx] in existing_labels) else LABELS[label_idx]
     ax.add_patch(patches.Rectangle(xy=(left, bottom), width=right-left,
                                     height=top-bottom, fill=False,
-                                    label=label))
+                                    label=label, color=['blue', 'red', 'white'][label_idx]))
 
 def plot_image_traffic(image, bboxes, labels):
     _, ax = plt.subplots()

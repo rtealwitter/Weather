@@ -115,24 +115,23 @@ if __name__ == '__main__':
     #random_indices = sorted(np.random.randint(0,1460, size=(1,10)).tolist()[0])
     #sample_data(year, random_indices)
 
-    #images, boxes = read_sample('1979')
-    #index = 5
-    #img, bx, labels = rescale(images[index], boxes[index])
-    #print(len(bx))
-    #plot_image_extreme(img, bx, labels)
+    images, boxes = read_sample('1979')
+    index = 5
+    img, bx, labels = rescale(images[index], boxes[index])
+    plot_image_extreme(img, bx, labels)
 
-    year = '1979'
-    weather_variables = [2,6,10]
-    nov1 = 4*(365-61)
-    dec1 = 4*(365-31)
-    hours_train = list(range(1460)[:nov1])
-    shrink_data(year, weather_variables, foldername='extreme/train', hours=hours_train)
+    #year = '1979'
+    #weather_variables = [2,6,10]
+    #nov1 = 4*(365-61)
+    #dec1 = 4*(365-31)
+    #hours_train = list(range(1460)[:nov1])
+    #shrink_data(year, weather_variables, foldername='extreme/train', hours=hours_train)
 
-    hours_valid = list(range(1460)[nov1:dec1])
-    shrink_data(year, weather_variables, foldername='extreme/valid', hours=hours_valid)
+    #hours_valid = list(range(1460)[nov1:dec1])
+    #shrink_data(year, weather_variables, foldername='extreme/valid', hours=hours_valid)
 
-    hours_test = list(range(1460)[dec1:])
-    shrink_data(year, weather_variables, foldername='extreme/test', hours=hours_test)
+    #hours_test = list(range(1460)[dec1:])
+    #shrink_data(year, weather_variables, foldername='extreme/test', hours=hours_test)
 
 
 
